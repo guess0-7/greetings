@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Happy Birthday! 🎉</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{
+    font-family:Arial, sans-serif;
+    background: linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+
+  /* Complete envelope redesign for realistic look */
+  #envelope {
+    position: relative;
+    width: 500px;
+    height: 320px;
+    cursor: pointer;
+    perspective: 1000px;
+    z-index: 10000;
+  }
+
+  /* Main envelope body - white rectangular base */
+  #envelope .envelope-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.6);
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  /* Left diagonal section of envelope */
+  #envelope .envelope-body .left-section {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    left: 0;
+    background: linear-gradient(135deg, #ffe6f0, #fff);
+    border-right: 1px solid #f0e0e5;
+    z-index: 1;
+  }
+
+  /* Right diagonal section of envelope */
+  #envelope .envelope-body .right-section {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    right: 0;
+    background: linear-gradient(225deg, #ffe6f0, #fff);
+    border-left: 1px solid #f0e0e5;
+    z-index: 1;
+  }
+
+  /* Front flap - prominent pink triangle */
+  #envelope .front-flap {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 250px solid transparent;
+    border-right: 250px solid transparent;
+    border-top: 180px solid #ff69b4;
+    z-index: 5;
+    transition: all 0.9s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    transform-origin: top center;
+    filter: drop-shadow(-3px 8px 12px rgba(0,0,0,0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* OPEN text on the flap */
+  #envelope .front-flap::before {
+    content: 'OPEN';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    background-color: #ff69b4;
+    border-radius: 8px;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 3px;
+    text-shadow: 0 3px 6px rgba(0,0,0,0.25);
+    z-index: 10;
+  }
+
+  /* When envelope is opened, flip the flap away */
+  #envelope.open .front-flap {
+    transform: translateX(-50%) rotateX(-180deg);
+    opacity: 0;
+    z-index: 0;
+  }
+
+  /* Back flap - revealed when opened */
+  #envelope .back-flap {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 250px solid transparent;
+    border-right: 250px solid transparent;
+    border-top: 180px ;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.6s ease 0.4s;
+    pointer-events: none;
+    filter: drop-shadow(-3px 8px 12px rgba(0,0,0,0.15));
+  }
+
+  #envelope.open .back-flap {
+    opacity: 1;
+  }
+
+  /* Center crease for 3D depth */
+  #envelope .center-crease {
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    left: 50%;
+    top: 0;
+    background: linear-gradient(180deg, rgba(100,50,80,0.15) 0%, rgba(100,50,80,0.05) 50%, transparent 100%);
+    z-index: 6;
+    pointer-events: none;
+  }
+
+  /* Text inside envelope body */
+  #envelope .envelope-body .envelope-text {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    right: 30px;
+    text-align: center;
+    font-size: 14px;
+    color: #999;
+    font-weight: 600;
+    z-index: 2;
+  }
+
+  /* fireworks canvas behind everything */
+  canvas {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Main greeting container */
+  .container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px 32px;
+    border-radius: 20px;
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.25);
+    max-width: 720px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    display: none;
+  }
+
+  .emoji {
+    font-size: 58px;
+    margin-bottom: 12px;
+    animation: bounce 1.5s infinite;
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-18px); }
+  }
+
+  .name-display {
+    font-size: 50px;
+    font-weight: 700;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    color: #ff69b4;
+    margin-bottom: 12px;
+    text-align: center;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
+  }
+
+  .greeting {
+    font-size: 50px;
+    font-weight: 700;
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  /* Improved lyrics display - stays visible longer and syncs properly */
+  .lyrics-display {
+    min-height: 120px;
+    font-size: 18px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 20px;
+    font-style: italic;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lyric-line {
+    opacity: 0;
+    animation: lyricFade 0.6s ease-out forwards;
+    white-space: pre-wrap;
+  }
+
+  @keyframes lyricFade {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .message {
+    font-size: 18px;
+    font-family: cursive, 'Comic Sans MS', sans-serif;
+    color: #444;
+    line-height: 1.6;
+    margin: 10px 0 12px;
+    display: none;
+    text-align: center;
+  }
+
+  #celebrateBtn {
+    padding: 14px 36px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    color: #fff;
+    font-weight: 700;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    transition: transform 0.2s;
+    margin-top: 8px;
+  }
+
+  #celebrateBtn:hover {
+    transform: translateY(-3px);
+  }
+
+  /* confetti piece */
+  .confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    pointer-events: none;
+    border-radius: 2px;
+    opacity: 1;
+  }
+
+  @keyframes confettiFall {
+    to { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* balloon + string */
+  .balloon {
+    position: fixed;
+    width: 48px;
+    height: 62px;
+    border-radius: 50% 50% 60% 60%;
+    pointer-events: none;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    transform-origin: center bottom;
+  }
+
+  .balloon .string {
+    position: absolute;
+    bottom: -70px;
+    width: 2px;
+    height: 70px;
+    background: #333;
+    left: 50%;
+    transform: translateX(-50%);
+    transform-origin: top center;
+    animation: stringWiggle 1.5s ease-in-out infinite;
+    border-radius: 1;
+    opacity: 0.9;
+  }
+
+  @keyframes stringWiggle {
+    0% { transform: translateX(-50%) rotate(-6deg); }
+    50% { transform: translateX(-50%) rotate(6deg); }
+    100% { transform: translateX(-50%) rotate(-6deg); }
+  }
+
+  /* Continuous floating picture animation - always visible during celebration */
+  .floating-pic {
+    position: fixed;
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    object-fit: cover;
+    pointer-events: none;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    animation: floatContinuous 8s linear forwards;
+  }
+
+  @keyframes floatContinuous {
+    0% {
+      transform: translateY(120vh) rotate(0deg) scale(0.7);
+      opacity: 0;
+    }
+    5% {
+      opacity: 1;
+    }
+    95% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) rotate(360deg) scale(1);
+      opacity: 0;
+    }
+  }
+
+  /* flash */
+  .flash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .flash.animate {
+    animation: flashAnim 400ms ease-out forwards;
+  }
+
+  @keyframes flashAnim {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @media (max-width: 700px) {
+    #envelope {
+      width: 300px;
+      height: 190px;
+    }
+    .greeting { font-size: 34px; }
+    .lyrics-display { font-size: 16px; }
+    .floating-pic { width: 100px; height: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Envelope overlay -->
+<div id="envelope">
+  <div class="envelope-body">
+    <div class="left-section"></div>
+    <div class="right-section"></div>
+    <div class="envelope-text">🎁 Click to see the surprise! </div>
+  </div>
+  <div class="back-flap"></div>
+  <div class="front-flap"></div>
+  <div class="center-crease"></div>
+</div>
+
+<canvas id="fireworksCanvas"></canvas>
+<div id="flash" class=""></div>
+
+<div class="container">
+  <div class="emoji">🎂</div>
+  <h1 class="greeting">Happy 18th Birthday!</h1>
+  <h2 class="name-display">Neomi</h2>
+  
+  <!-- Lyrics display below greeting -->
+  <div class="lyrics-display" id="lyricsDisplay"></div>
+  
+  <p class="message" id="message">“May your day be filled with joy, laughter, and unforgettable memories!
+  As you celebrate your 18th year, I wish you a future filled with good health, wisdom, and continuous growth. 
+  Keep shining and becoming the person you’re meant to be.” 🎉</p>
+  <button id="celebrateBtn" onclick="celebrate()">🎉 Celebrate!</button>
+</div>
+
+<script>
+document.getElementById('envelope').addEventListener('click', () => {
+  const env = document.getElementById('envelope');
+  env.classList.add('open');
+  setTimeout(() => {
+    env.style.display = 'none';
+    document.querySelector('.container').style.display = 'flex';
+    celebrate();
+  }, 1000);
+});
+
+const AUDIO_SRC = 'Just The Way You Are - Bruno Mars.mp3';
+
+/* Extended lyrics timeline with longer display duration */
+const lyricsTimeline = [
+  { t: 0.0, duration: 5.5, text: "OH, OH-OH-OH\nOH-OH-OH-OH\nOH-OH-OH" },
+  { t: 17.0, duration: 5.5, text: "Oh, her eyes, her eyes\nMake the stars look like they're not shinin'" },
+  { t: 22.5, duration: 4.5, text: "Her hair, her hair\nFalls perfectly without her tryin'" },
+  { t: 27.0, duration: 7.0, text: "She's so beautiful\nAnd I tell her every day" },
+  { t: 34.0, duration: 6.0, text: "Yeah, I know, I know\nWhen I compliment her, she won't believe me" },
+  { t: 40.0, duration: 4.5, text: "And it's so, it's so\nSad to think that she don't see what I see" },
+  { t: 44.5, duration: 7.0, text: "But every time she asks me, \"Do I look okay?\"\nI say…" },
+  { t: 51.5, duration: 9.5, text: "When I see your face\nThere's not a thing that I would change" },
+  { t: 61.0, duration: 9.0, text: "'Cause you're amazing\nJust the way you are" },
+  { t: 70.0, duration: 8.0, text: "And when you smile\nThe whole world stops and stares for a while" },
+  { t: 78.0, duration: 10.0, text: "'Cause girl, you're amazing\nJust the way you are" },
+];
+
+const lyricsDisplayEl = document.getElementById('lyricsDisplay');
+let lyricTimeouts = [];
+let currentLyricLine = null;
+
+function celebrate() {
+  document.getElementById('celebrateBtn').style.display = 'none';
+  document.getElementById('message').style.display = 'block';
+
+  flashEffect();
+
+  const audio = new Audio(AUDIO_SRC);
+  audio.volume = 1;
+  audio.play().then(() => {
+    scheduleLyrics(audio);
+  }).catch((err) => {
+    audio.addEventListener('playing', () => scheduleLyrics(audio), { once: true });
+    audio.play().catch(() => {});
+  });
+
+  startSparkles();
+  bigConfettiAndFlow();
+  startFireworks();
+
+  const duration = 10000;
+  const interval = 400;
+  let elapsed = 0;
+
+  const celebrationInterval = setInterval(() => {
+    confettiSmallBurst();
+    const count = window.innerWidth < 700 ? 1 : 2;
+    for (let i = 0; i < count; i++) createBalloon(Math.random() * (window.innerWidth - 80));
+    
+    /* Always create floating pictures continuously */
+    createFloatingPicture();
+    
+    elapsed += interval;
+    if (elapsed >= duration) clearInterval(celebrationInterval);
+  }, interval);
+}
+
+function flashEffect() {
+  const f = document.getElementById('flash');
+  f.classList.remove('animate');
+  void f.offsetWidth;
+  f.classList.add('animate');
+}
+
+function scheduleLyrics(audio) {
+  lyricTimeouts.forEach(t => clearTimeout(t));
+  lyricTimeouts = [];
+
+  const startOffset = audio.currentTime;
+  lyricsDisplayEl.innerHTML = '';
+
+  lyricsTimeline.forEach(entry => {
+    const delay = Math.max(0, (entry.t - startOffset)) * 1000;
+    const showTimeout = setTimeout(() => {
+      showLyricLine(entry.text);
+    }, delay);
+    lyricTimeouts.push(showTimeout);
+    
+    /* Hide lyric after its duration expires */
+    const hideDelay = delay + (entry.duration * 1000);
+    const hideTimeout = setTimeout(() => {
+      hideLyricLine();
+    }, hideDelay);
+    lyricTimeouts.push(hideTimeout);
+  });
+}
+
+function showLyricLine(text) {
+  if (currentLyricLine) {
+    currentLyricLine.remove();
+  }
+  
+  const line = document.createElement('div');
+  line.className = 'lyric-line';
+  line.textContent = text;
+  lyricsDisplayEl.appendChild(line);
+  currentLyricLine = line;
+}
+
+function hideLyricLine() {
+  if (currentLyricLine && currentLyricLine.parentElement) {
+    currentLyricLine.remove();
+    currentLyricLine = null;
+  }
+}
+
+let sparkleIntervalRef = null;
+function startSparkles() {
+  const greeting = document.querySelector('.greeting');
+  if (sparkleIntervalRef) clearInterval(sparkleIntervalRef);
+  sparkleIntervalRef = setInterval(() => {
+    const s = document.createElement('div');
+    s.style.position = 'absolute';
+    s.style.width = '6px';
+    s.style.height = '6px';
+    s.style.borderRadius = '50%';
+    s.style.background = '#fff';
+    s.style.boxShadow = '0 0 6px #fff';
+    s.style.left = Math.random() * greeting.offsetWidth + 'px';
+    s.style.top = Math.random() * greeting.offsetHeight + 'px';
+    greeting.appendChild(s);
+    setTimeout(() => s.remove(), 900);
+  }, 220);
+}
+
+function bigConfettiAndFlow() {
+  confettiBurst(window.innerWidth / 2, window.innerHeight / 2, 100);
+}
+
+function confettiBurst(x = window.innerWidth / 2, y = window.innerHeight / 2, total = 80) {
+  const colors = ['#f5576c', '#f093fb', '#4facfe', '#00f2fe', '#ffd700', '#ff6b9d'];
+  for (let i = 0; i < total; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = x + 'px';
+    c.style.top = y + 'px';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 10;
+    c.style.width = size + 'px';
+    c.style.height = (size / (Math.random() * 1.3 + 1.1)) + 'px';
+    document.body.appendChild(c);
+    const angle = Math.random() * Math.PI * 2;
+    const distance = 120 + Math.random() * 320;
+    const dx = Math.cos(angle) * distance;
+    const dy = Math.sin(angle) * distance;
+    c.animate(
+      [
+        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+        { transform: `translate(${dx}px, ${dy}px) rotate(${720 + Math.random() * 720}deg)`, opacity: 0 }
+      ],
+      { duration: 700 + Math.random() * 900, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' }
+    );
+    setTimeout(() => c.remove(), 2000);
+  }
+}
+
+function confettiSmallBurst() {
+  const colors = ['#f5576c', '#f093fb', '#4facfe', '#00f2fe', '#ffd700', '#ff6b9d'];
+  for (let i = 0; i < 6; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.left = Math.random() * window.innerWidth + 'px';
+    c.style.top = '-20px';
+    c.style.background = colors[Math.floor(Math.random() * colors.length)];
+    const size = 6 + Math.random() * 8;
+    c.style.width = size + 'px';
+    c.style.height = (size / (Math.random() * 1.3 + 1.1)) + 'px';
+    document.body.appendChild(c);
+    c.style.animation = 'confettiFall ' + (2200 + Math.random() * 1200) + 'ms linear forwards';
+    setTimeout(() => c.remove(), 4200);
+  }
+}
+
+function createBalloon(x) {
+  const colors = ['#FF6B6B', '#4ECDC4', '#FFE66D', '#95E1D3', '#F38181', '#AA96DA'];
+  const b = document.createElement('div');
+  b.className = 'balloon';
+  b.style.left = x + 'px';
+  b.style.bottom = '-120px';
+  b.style.background = colors[Math.floor(Math.random() * colors.length)];
+  const s = document.createElement('div');
+  s.className = 'string';
+  b.appendChild(s);
+  document.body.appendChild(b);
+  const deltaX = (Math.random() - 0.5) * 200;
+  const duration = 4000 + Math.random() * 3000;
+  b.animate(
+    [
+      { transform: 'translate(0,0) rotate(0deg)' },
+      { transform: `translate(${deltaX}px, -110vh) rotate(${Math.random() * 40 - 20}deg)` }
+    ],
+    { duration: duration, easing: 'cubic-bezier(.2,.6,.2,1)', fill: 'forwards' }
+  );
+  setTimeout(() => b.remove(), duration + 80);
+}
+
+/* Floating pictures spawn every 400ms continuously without random chance */
+function createFloatingPicture() {
+  const pic = document.createElement('img');
+  pic.className = 'floating-pic';
+  pic.src = '/images/1.png';
+  pic.crossOrigin = 'anonymous';
+  const size = 90 + Math.random() * 90;
+  pic.style.width = size + 'px';
+  pic.style.height = size + 'px';
+  pic.style.left = Math.random() * (window.innerWidth - size) + 'px';
+  document.body.appendChild(pic);
+  setTimeout(() => pic.remove(), 8500);
+}
+
+const canvas = document.getElementById('fireworksCanvas');
+const ctx = canvas.getContext('2d');
+let cw, ch;
+
+function resizeCanvas() {
+  cw = canvas.width = window.innerWidth;
+  ch = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+const fireworks = [];
+const particles = [];
+
+function random(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+class Firework {
+  constructor(x, y, tx, ty) {
+    this.x = x;
+    this.y = y;
+    this.tx = tx;
+    this.ty = ty;
+    this.distanceToTarget = Math.hypot(tx - x, ty - y);
+    this.traveled = 0;
+    this.angle = Math.atan2(ty - y, tx - x);
+    this.speed = 5;
+    this.acceleration = 1.05;
+  }
+  update() {
+    const vx = Math.cos(this.angle) * this.speed;
+    const vy = Math.sin(this.angle) * this.speed;
+    this.x += vx;
+    this.y += vy;
+    this.speed *= this.acceleration;
+    this.traveled += Math.hypot(vx, vy);
+    if (this.traveled >= this.distanceToTarget) {
+      createParticles(this.tx, this.ty);
+      return true;
+    }
+    return false;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.moveTo(this.x, this.y);
+    ctx.lineTo(this.x - 1, this.y - 1);
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.stroke();
+  }
+}
+
+class Particle {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.speed = random(1, 6);
+    this.angle = random(0, Math.PI * 2);
+    this.friction = 0.95;
+    this.gravity = 0.7;
+    this.alpha = 1;
+    this.decay = random(0.015, 0.03);
+    this.color = `hsl(${Math.floor(random(0, 360))},100%,60%)`;
+  }
+  update() {
+    this.speed *= this.friction;
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed + this.gravity * 0.5;
+    this.alpha -= this.decay;
+  }
+  draw() {
+    ctx.globalAlpha = this.alpha;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, 2, 0, Math.PI * 2, false);
+    ctx.fillStyle = this.color;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function createParticles(x, y) {
+  const count = 26;
+  for (let i = 0; i < count; i++) particles.push(new Particle(x, y));
+}
+
+function startFireworksLoop() {
+  if (!startFireworksLoop.started) {
+    startFireworksLoop.started = true;
+    animateFireworks();
+  }
+}
+
+function startFireworks() {
+  startFireworksLoop();
+}
+
+function animateFireworks() {
+  requestAnimationFrame(animateFireworks);
+  ctx.clearRect(0, 0, cw, ch);
+  for (let i = fireworks.length - 1; i >= 0; i--) {
+    fireworks[i].draw();
+    if (fireworks[i].update()) fireworks.splice(i, 1);
+  }
+  for (let i = particles.length - 1; i >= 0; i--) {
+    particles[i].draw();
+    particles[i].update();
+    if (particles[i].alpha <= 0) particles.splice(i, 1);
+  }
+  if (Math.random() < 0.04) fireworks.push(new Firework(cw / 2, ch, random(100, cw - 100), random(50, ch / 2)));
+}
+
+startFireworks();
+</script>
+</body>
+</html>
