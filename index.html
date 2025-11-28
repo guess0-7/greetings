@@ -492,10 +492,10 @@ function createBalloon(leftX){
 }
 
 /* floating pictures (limit existing <= 3) */
-const imagePaths = ['images/1.png' , 'images/2.png' , 'images/3.png']; // place your responsive images in images/ folder (relative)
+const imagePaths = ['images/1.png' , 'images/2.png' , 'images/3.png' , 'images/4.png' , 'images/5.png']; // place your responsive images in images/ folder (relative)
 function createFloatingPicture(){
   const existing = document.querySelectorAll('.floating-pic').length;
-  if (existing >= 6) return;
+  if (existing >= 5) return;
   const pic = document.createElement('img');
   pic.className = 'floating-pic';
   // choose random image if available
